@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<script>
+
+</script>
+
+
+<p></p>
+<p><strong>FW Version:</strong> {{app_version}} <strong>AI Version:</strong> {{ai_version}}</p>
+
+<div class="columns">
+  <div class="column">
+    <a href="{{ url_for('main_web.upload_file') }}">Upload a Document</a>
+  </div>
+
+
+</div>
+
+{% endblock %}

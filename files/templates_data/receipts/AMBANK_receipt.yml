@@ -1,0 +1,36 @@
+issuer: AmBank
+keywords:
+  - "AmBank"
+  - "HABEEB MAJU"
+  - "MyDebit"
+fields:
+  merchant_name: '^AmBank\n([A-Z ]+)'  # Merchant name that follows 'AmBank'
+  address: '(NO \d{1,3}[A-Z]?[-\w, ]+\nPUSAT BANDAR BANGI, SEK 9\n43650 BANDAR BARU BANGI\nSELANGOR)'  # Address block
+  date:
+    - 'DATE/TIME (\d{2} \w{3} \d{4})'
+    - 'DATE/TIME:(\d{2} \w{3} \d{4})'  # With colon
+    - 'DATE/TIME(\d{2} \w{3} \d{4})'      # Without colon
+    - 'DATE/TIME\n(\d{2} \w{3} \d{4})'       # In a new line
+    - 'DATE/TIME:\n(\d{2} \w{3} \d{4})'
+  time: 'DATE/TIME \d{2} \w{3} \d{4} (\d{2}:\d{2})'  # Time in '09:10' format
+  terminal_id: 'TID:(\d+)'  # Terminal ID
+  mid: 'MID:(\d+)'  # Merchant ID
+  trace_number: 'TRACE:(\d+)'  # Trace number
+  card_number: 'MyDebit\n(\d{4} \d{2}\*\* \*\*\*\* \d{4})'  # Card number in format '4632 25** **** 8131'
+  approval_code: 'APP CODE:\s*(\d+)'  # Approval code
+  aid: 'AID: ([\w\d]+)'  # AID code
+  amount: '(\d+\.\d{2})'  # Total amount '8.50'
+  response_code: 'RESPONSE CODE:?\s*(\d{2})'  # Response code '00'
+  sale_type: 'SALE'  # Sale type
+required_fields:
+  - merchant_name
+  - address
+  - date
+  - time
+  - amount
+options:
+  remove_whitespace: False
+  currency: RM  # Set the currency to Malaysian Ringgit
+  date_formats:
+    - '%d %b %Y'
+  decimal_separator: '.'

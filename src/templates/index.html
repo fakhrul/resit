@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+
+<div class="columns">
+  <div class="column">
+    <!-- <img src="{{url_for('static', filename='kaawal.png')}}" width="300" /> -->
+    <h2 class="title">
+      resit.ai
+    </h2>
+    <p>FW Version: {{app_version}}</p>
+    <p>AI Version: {{ai_version}}</p>
+  </div>
+ 
+</div>
+
+<script src="{{ url_for('static', filename='js/control.js') }}"></script>
+{% endblock %}

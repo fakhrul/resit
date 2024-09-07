@@ -1,0 +1,30 @@
+issuer: Generic Payment Receipt
+template_name: generic_receipt 
+file: ''
+fields:
+  receipt_number: 'Receipt\s*Number[:\s]*(\w+)'
+  date: 'Date[:\s]*(\d{2}[/-]\d{2}[/-]\d{4})'
+  payment_method: 'Payment\s*Method[:\s]*(\w+.*)'
+  transaction_id: 'Transaction\s*ID[:\s]*(\w+)'
+  customer_name: 'Customer[:\s]*(\w+.*)'
+  total_paid: 'Total\s*Paid[:\s]*[A-Z]*[\$€£]?(\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{2})?)'
+keywords:
+  - Receipt
+  - Payment
+required_fields:
+  - receipt_number
+  - date
+  - total_paid
+options:
+  currency: USD
+  date_formats:
+    - '%d/%m/%Y'
+    - '%m/%d/%Y'
+    - '%Y-%m-%d'
+  remove_whitespace: False
+  languages:
+    - en
+  replace:
+    - ['\[', '']
+    - ['\]', '']
+  decimal_separator: '.'

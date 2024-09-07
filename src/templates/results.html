@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Extracted Data</title>
+</head>
+<body>
+    <h1>Extracted Data from {{ filename }}</h1>
+
+    <h2>Status: {{ status }}</h2>
+
+    <h3>Raw OCR Text:</h3>
+    <pre>{{ raw_text }}</pre>
+
+    <h3>Parsed Data:</h3>
+    {% if parsed_data %}
+        <pre>{{ parsed_data | tojson(indent=2) }}</pre>
+    {% else %}
+        <p>No parsed data available.</p>
+    {% endif %}
+
+    <a href="{{ url_for('main_web.upload_file') }}">Upload Another File</a>
+</body>
+</html>

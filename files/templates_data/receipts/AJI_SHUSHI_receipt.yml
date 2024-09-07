@@ -1,0 +1,30 @@
+issuer: AJI SUSHI SDN BHD
+template_name: aji_sushi_receipt 
+file: ''
+fields:
+  merchant_name: 'AJI SUSHI SDN BHD'
+  tid: 'TID:\s*(\d+)'
+  mid: 'MID:\s*(\d+)'
+  invoice_number: 'INVOICE NO:\s*(\d+)'
+  date_time: 'DATE/TIME:\s*(\d{2}/\d{2}/\d{4}\s\d{2}:\d{2}:\d{2})'
+  rref_num: 'RREF NUM:\s*(\d+)'
+  approval_code: 'APPROVAL CODE:\s*(\d+)'
+  amount: '\s+MYR\s*(\d+\.\d{2})'
+keywords:
+  - AJI SUSHI SDN BHD
+  - PUBLIC BANK
+required_fields:
+  - merchant_name
+  - amount
+options:
+  template_name: 'aji_sushi_receipt' 
+  currency: MYR
+  date_formats:
+    - '%d/%m/%Y %H:%M:%S'
+  remove_whitespace: False
+  languages:
+    - en
+  replace:
+    - ['\[', '']
+    - ['\]', '']
+  decimal_separator: '.'

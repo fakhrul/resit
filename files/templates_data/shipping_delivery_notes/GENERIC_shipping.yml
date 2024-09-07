@@ -1,0 +1,30 @@
+issuer: Generic Shipping Note
+template_name: generic_shipping 
+file: ''
+fields:
+  delivery_note_number: 'Delivery\s*Note\s*Number[:\s]*(\w+)'
+  date: 'Date[:\s]*(\d{2}[/-]\d{2}[/-]\d{4})'
+  recipient_name: 'Recipient[:\s]*(\w+.*)'
+  recipient_address: 'Recipient\s*Address[:\s]*(.*?)(?:\n|$)'
+  total_items: 'Total\s*Items[:\s]*(\d+)'
+  shipped_by: 'Shipped\s*By[:\s]*(\w+.*)'
+  carrier: 'Carrier[:\s]*(\w+.*)'
+  tracking_number: 'Tracking\s*Number[:\s]*(\w+)'
+keywords:
+  - Delivery Note
+  - Shipping Note
+required_fields:
+  - delivery_note_number
+  - date
+  - total_items
+options:
+  date_formats:
+    - '%d/%m/%Y'
+    - '%m/%d/%Y'
+    - '%Y-%m-%d'
+  remove_whitespace: False
+  languages:
+    - en
+  replace:
+    - ['\[', '']
+    - ['\]', '']

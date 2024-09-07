@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/styles.css') }}">
+
+<h1>Upload a Document</h1>
+<form action="{{ url_for('main_web.upload_file') }}" method="post" enctype="multipart/form-data">
+    <label for="file">Select a file:</label>
+    <input type="file" name="file" id="file">
+
+    <label for="ocr_engine">Select OCR Engine:</label>
+    <select id="ocr_engine" name="ocr_engine">
+        <option value="googlevision">Google Vision</option>
+        <option value="tesseract">Tesseract</option>
+    </select>
+
+    <input type="submit" value="Upload">
+</form>
+
+
+<h2>Or use your phone camera</h2>
+<div id="result"></div>
+<video id="video" autoplay style="display:none;"></video>
+<canvas id="canvas"></canvas>
+
+<label for="ocrEngine">Select OCR Engine:</label>
+<select id="ocrEngine">
+    <option value="googlevision">Google Vision</option>
+    <option value="tesseract">Tesseract</option>
+</select>
+
+<button onclick="snapPhoto()">Snap Photo</button>
+
+<!-- Display captured images -->
+<div class="capturedImages">
+    <div class="capturedImage">
+        <h3>Processed Image (with OpenCV)</h3>
+        <img id="processedImage" alt="Processed Image" />
+        <button onclick="uploadPhoto(processedBlob)">Upload Processed Image</button>
+        <button onclick="savePhoto(processedImageDataUrl, 'processed_image.png')">Save Processed Image</button>
+    </div>
+    <div class="capturedImage">
+        <h3>Cropped Image (inside contour)</h3>
+        <img id="croppedImage" alt="Cropped Image" />
+        <button onclick="uploadPhoto(croppedBlob)">Upload Cropped Image</button>
+        <button onclick="savePhoto(croppedImageDataUrl, 'cropped_image.png')">Save Cropped Image</button>
+    </div>
+    <div class="capturedImage">
+        <h3>Raw Image (no processing)</h3>
+        <img id="rawImage" alt="Raw Image" />
+        <button onclick="uploadPhoto(rawBlob)">Upload Raw Image</button>
+        <button onclick="savePhoto(rawImageDataUrl, 'raw_image.png')">Save Raw Image</button>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/upload.js') }}"></script>
+
+{% endblock %}

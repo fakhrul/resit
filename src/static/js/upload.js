@@ -1,0 +1,245 @@
+let video, canvas, ctx, stream, src, dst, approx;
+let rawImageDataUrl, processedImageDataUrl, croppedImageDataUrl;
+let rawBlob, processedBlob, croppedBlob;
+
+function startCamera() {
+    video = document.getElementById('video');
+    canvas = document.getElementById('canvas');
+    ctx = canvas.getContext('2d');
+
+    const constraints = {
+        video: {
+            facingMode: "environment"
+        }
+    };
+
+    navigator.mediaDevices.getUserMedia(constraints)
+        .then(s => {
+            stream = s;
+            video.srcObject = stream;
+            video.play();
+            video.onloadedmetadata = () => {
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                console.log("Video dimensions set: ", canvas.width, canvas.height);
+                processVideo();
+            };
+        })
+        .catch(err => console.error('Error accessing camera: ', err));
+}
+
+function processVideo() {
+    if (!stream) return;
+
+    // Clear canvas before drawing the new frame
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Draw the video frame onto the canvas
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    // Add "Analyzing..." text overlay on the video feed
+    ctx.font = "30px Arial";  // Increase font size for better visibility
+    ctx.fillStyle = "yellow";
+    ctx.fillText("Analyzing...", 10, 50); // Adjust position if needed
+
+    // Initialize OpenCV matrices if not already done
+    if (!src) {
+        src = new cv.Mat(canvas.height, canvas.width, cv.CV_8UC4);
+        dst = new cv.Mat(canvas.height, canvas.width, cv.CV_8UC1);
+        approx = new cv.Mat();
+        console.log("OpenCV Matrices initialized.");
+    }
+
+    // Convert the canvas image to OpenCV format
+    src.data.set(ctx.getImageData(0, 0, canvas.width, canvas.height).data);
+
+    try {
+        // Convert image to grayscale
+        cv.cvtColor(src, dst, cv.COLOR_RGBA2GRAY, 0);
+
+        // Apply Gaussian blur to reduce noise
+        cv.GaussianBlur(dst, dst, new cv.Size(5, 5), 0, 0, cv.BORDER_DEFAULT);
+
+        // Apply Canny edge detection
+        cv.Canny(dst, dst, 50, 150);
+
+        // Find contours
+        let contours = new cv.MatVector();
+        let hierarchy = new cv.Mat();
+        cv.findContours(dst, contours, hierarchy, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
+
+        // Loop through the contours to find the largest one
+        if (contours.size() > 0) {
+            let largestContour = contours.get(0);
+            let maxArea = cv.contourArea(largestContour);
+            for (let i = 1; i < contours.size(); i++) {
+                let contour = contours.get(i);
+                let area = cv.contourArea(contour);
+                if (area > maxArea) {
+                    largestContour = contour;
+                    maxArea = area;
+                }
+            }
+
+            // Approximate the contour to a polygon
+            let perimeter = cv.arcLength(largestContour, true);
+            cv.approxPolyDP(largestContour, approx, 0.02 * perimeter, true);
+
+            // Draw the blue contour
+            ctx.strokeStyle = 'blue';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            for (let j = 0; j < largestContour.data32S.length / 2; j++) {
+                let x = largestContour.data32S[j * 2];
+                let y = largestContour.data32S[j * 2 + 1];
+                if (j === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            }
+            ctx.closePath();
+            ctx.stroke();
+
+            // If the approximated contour has 4 points, it is a rectangle
+            if (approx.rows === 4) {
+                let points = [];
+                for (let i = 0; i < approx.rows; i++) {
+                    let point = approx.data32S.slice(i * 2, i * 2 + 2);
+                    points.push(point);
+
+                    // Draw circles at the corners
+                    ctx.beginPath();
+                    ctx.arc(point[0], point[1], 10, 0, 2 * Math.PI);
+                    ctx.fillStyle = 'red';
+                    ctx.fill();
+                }
+
+                // Draw the rectangle (connecting the four corners)
+                ctx.beginPath();
+                ctx.moveTo(points[0][0], points[0][1]);
+                for (let i = 1; i < points.length; i++) {
+                    ctx.lineTo(points[i][0], points[i][1]);
+                }
+                ctx.closePath();
+                ctx.lineWidth = 3;
+                ctx.strokeStyle = 'green';
+                ctx.stroke();
+
+                // Cropping the image (Image 2 - cropped)
+                let [x, y, w, h] = [
+                    Math.min(points[0][0], points[1][0], points[2][0], points[3][0]),
+                    Math.min(points[0][1], points[1][1], points[2][1], points[3][1]),
+                    Math.max(points[0][0], points[1][0], points[2][0], points[3][0]) - Math.min(points[0][0], points[1][0], points[2][0], points[3][0]),
+                    Math.max(points[0][1], points[1][1], points[2][1], points[3][1]) - Math.min(points[0][1], points[1][1], points[2][1], points[3][1])
+                ];
+
+                let croppedCanvas = document.createElement('canvas');
+                croppedCanvas.width = w;
+                croppedCanvas.height = h;
+                let croppedCtx = croppedCanvas.getContext('2d');
+                croppedCtx.drawImage(canvas, x, y, w, h, 0, 0, w, h);
+                croppedImageDataUrl = croppedCanvas.toDataURL();
+                croppedCanvas.toBlob(blob => {
+                    croppedBlob = blob;
+                });
+            }
+        }
+
+        contours.delete();
+        hierarchy.delete();
+
+    } catch (error) {
+        console.error("Error during OpenCV processing: ", error);
+    }
+
+    // Schedule the next frame processing
+    requestAnimationFrame(processVideo);
+}
+
+function snapPhoto() {
+    // Raw image (Image 3) captured directly from the video, without OpenCV overlays
+    let rawCanvas = document.createElement('canvas');
+    rawCanvas.width = video.videoWidth;
+    rawCanvas.height = video.videoHeight;
+    let rawCtx = rawCanvas.getContext('2d');
+    rawCtx.drawImage(video, 0, 0, rawCanvas.width, rawCanvas.height);
+    rawImageDataUrl = rawCanvas.toDataURL();
+    rawCanvas.toBlob(blob => {
+        rawBlob = blob;
+    });
+
+    // Processed image (Image 1)
+    processedImageDataUrl = canvas.toDataURL('image/png');
+    canvas.toBlob(blob => {
+        processedBlob = blob;
+    });
+
+    // Display the captured images
+    document.getElementById('processedImage').src = processedImageDataUrl;
+    document.getElementById('croppedImage').src = croppedImageDataUrl;
+    document.getElementById('rawImage').src = rawImageDataUrl;
+}
+
+function uploadPhoto(blob) {
+    if (!blob) {
+        alert("No photo snapped yet!");
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('file', blob, 'capture.png');
+
+    const ocrEngine = document.getElementById('ocrEngine').value;
+    formData.append('ocr_engine', ocrEngine);  // Add OCR engine choice to the request
+
+    fetch('/api/extract', { method: 'POST', body: formData })
+        .then(response => response.json())
+        .then(data => {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '';  // Clear previous results
+
+            // Display status
+            const statusElement = document.createElement('p');
+            statusElement.innerHTML = '<strong>Status:</strong> ' + data.status;
+            resultDiv.appendChild(statusElement);
+
+            // Display raw text
+            const rawTextElement = document.createElement('pre');
+            rawTextElement.innerHTML = '<strong>Raw Text:</strong>\n' + data.raw_text;
+            resultDiv.appendChild(rawTextElement);
+
+            // Display parsed data
+            const parsedDataElement = document.createElement('pre');
+            if (data.parsed_data) {
+                parsedDataElement.innerHTML = '<strong>Parsed Data:</strong>\n' + JSON.stringify(data.parsed_data, null, 2);
+            } else {
+                parsedDataElement.innerHTML = '<strong>Parsed Data:</strong> No data parsed.';
+            }
+            resultDiv.appendChild(parsedDataElement);
+        })
+        .catch(error => {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<p>Error uploading captured image: ' + error.message + '</p>';
+            console.error('Error uploading captured image:', error);
+        });
+}
+
+
+function savePhoto(dataUrl, filename) {
+    const a = document.createElement('a');
+    a.href = dataUrl;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+}
+
+document.addEventListener('DOMContentLoaded', (event) => {
+    if (!cv) {
+        console.error('OpenCV.js failed to load.');
+    } else {
+        console.log('OpenCV.js loaded successfully.');
+        startCamera();
+    }
+});
