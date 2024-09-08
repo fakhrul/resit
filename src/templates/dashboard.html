@@ -2,20 +2,106 @@
 
 {% block content %}
 
-<script>
+<section class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Dashboard Header -->
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-3xl font-bold text-gray-900">Dashboard</h1>
+        <a href="{{ url_for('main_web.upload_file') }}" 
+           class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+            Upload a Document
+        </a>
+    </div>
 
-</script>
+    <!-- System Information -->
+    <div class="bg-white shadow-lg rounded-lg p-6 mb-8">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+                <p class="text-sm text-gray-500">FW Version</p>
+                <p class="text-lg font-medium">{{ app_version }}</p>
+            </div>
+            <div>
+                <p class="text-sm text-gray-500">AI Version</p>
+                <p class="text-lg font-medium">{{ ai_version }}</p>
+            </div>
+        </div>
+    </div>
 
+    <!-- Key Metrics and Insights -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        <!-- Metric 1: Total Uploads -->
+        <div class="bg-white p-6 rounded-lg shadow">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-blue-500 text-white">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 6h18M9 14h6M9 18h6"></path>
+                    </svg>
+                </div>
+                <div class="ml-4">
+                    <p class="text-gray-600">Total Documents Uploaded</p>
+                    <p class="text-2xl font-bold">{{ total_uploads }}</p>
+                </div>
+            </div>
+        </div>
 
-<p></p>
-<p><strong>FW Version:</strong> {{app_version}} <strong>AI Version:</strong> {{ai_version}}</p>
+        <!-- Metric 2: API Requests -->
+        <div class="bg-white p-6 rounded-lg shadow">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-green-500 text-white">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                </div>
+                <div class="ml-4">
+                    <p class="text-gray-600">API Requests</p>
+                    <p class="text-2xl font-bold">{{ total_api_requests }}</p>
+                </div>
+            </div>
+        </div>
 
-<div class="columns">
-  <div class="column">
-    <a href="{{ url_for('main_web.upload_file') }}">Upload a Document</a>
-  </div>
+        <!-- Metric 3: Success Rate -->
+        <div class="bg-white p-6 rounded-lg shadow">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-yellow-500 text-white">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3"></path>
+                    </svg>
+                </div>
+                <div class="ml-4">
+                    <p class="text-gray-600">OCR Success Rate</p>
+                    <p class="text-2xl font-bold">{{ success_rate }}%</p>
+                </div>
+            </div>
+        </div>
+    </div>
 
+    <!-- Recent Uploads and API Usage -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Recent Uploads -->
+        <div class="bg-white p-6 rounded-lg shadow">
+            <h2 class="text-lg font-bold mb-4">Recent Uploads</h2>
+            <ul class="divide-y divide-gray-200">
+                {% for upload in recent_uploads %}
+                <li class="py-4 flex justify-between items-center">
+                    <span>{{ upload.filename }}</span>
+                    <span class="text-gray-500 text-sm">{{ upload.timestamp }}</span>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
 
-</div>
+        <!-- Recent API Requests -->
+        <div class="bg-white p-6 rounded-lg shadow">
+            <h2 class="text-lg font-bold mb-4">Recent API Requests</h2>
+            <ul class="divide-y divide-gray-200">
+                {% for request in recent_api_requests %}
+                <li class="py-4 flex justify-between items-center">
+                    <span>{{ request.endpoint }}</span>
+                    <span class="text-gray-500 text-sm">{{ request.timestamp }}</span>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</section>
 
 {% endblock %}

@@ -1,24 +1,39 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Extracted Data</title>
-</head>
-<body>
-    <h1>Extracted Data from {{ filename }}</h1>
+{% extends "base.html" %}
 
-    <h2>Status: {{ status }}</h2>
+{% block content %}
 
-    <h3>Raw OCR Text:</h3>
-    <pre>{{ raw_text }}</pre>
+<div class="container mx-auto py-10 px-6">
+    <!-- Header -->
+    <div class="text-center mb-10">
+        <h1 class="text-4xl font-bold text-gray-800 mb-4">Extracted Data from <span class="text-indigo-600">{{ filename }}</span></h1>
+        <h2 class="text-2xl font-semibold text-gray-600 mb-6">Status: <span class="font-bold">{{ status }}</span></h2>
+    </div>
 
-    <h3>Parsed Data:</h3>
-    {% if parsed_data %}
-        <pre>{{ parsed_data | tojson(indent=2) }}</pre>
-    {% else %}
-        <p>No parsed data available.</p>
-    {% endif %}
+    <!-- Content Section -->
+    <div class="bg-white p-6 rounded-lg shadow-md">
+        <!-- Raw OCR Text -->
+        <div class="mb-6">
+            <h3 class="text-xl font-semibold text-gray-800 mb-4">Raw OCR Text:</h3>
+            <pre class="bg-gray-100 p-4 rounded-lg text-sm text-gray-700 overflow-auto">{{ raw_text }}</pre>
+        </div>
 
-    <a href="{{ url_for('main_web.upload_file') }}">Upload Another File</a>
-</body>
-</html>
+        <!-- Parsed Data -->
+        <div>
+            <h3 class="text-xl font-semibold text-gray-800 mb-4">Parsed Data:</h3>
+            {% if parsed_data %}
+            <pre class="bg-gray-100 p-4 rounded-lg text-sm text-gray-700 overflow-auto">{{ parsed_data | tojson(indent=2) }}</pre>
+            {% else %}
+            <p class="text-red-500">No parsed data available.</p>
+            {% endif %}
+        </div>
+
+        <!-- Back to Upload Button -->
+        <div class="mt-8">
+            <a href="{{ url_for('main_web.upload_file') }}" class="inline-block bg-indigo-600 text-white px-6 py-3 rounded-lg shadow hover:bg-indigo-700">
+                Upload Another File
+            </a>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

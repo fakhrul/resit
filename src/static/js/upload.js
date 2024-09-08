@@ -193,7 +193,7 @@ function uploadPhoto(blob) {
     const ocrEngine = document.getElementById('ocrEngine').value;
     formData.append('ocr_engine', ocrEngine);  // Add OCR engine choice to the request
 
-    fetch('/api/extract', { method: 'POST', body: formData })
+    fetch('/extract', { method: 'POST', body: formData })
         .then(response => response.json())
         .then(data => {
             const resultDiv = document.getElementById('result');

@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="container mx-auto px-4 py-8">
+    <!-- Page Title -->
+    <h1 class="text-3xl font-bold text-gray-900 mb-8">Receipt Details</h1>
+
+    <!-- Receipt Information Section -->
+    <div class="bg-white shadow-md rounded-lg p-6 mb-8">
+        <div class="mb-6">
+            <h2 class="text-xl font-bold text-gray-700">Receipt Information</h2>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Left Column: Basic Information -->
+            <div>
+                <p><strong>Filename:</strong> {{ receipt.filename }}</p>
+                <p><strong>Upload Time:</strong> {{ receipt.upload_time }}</p>
+                <p><strong>Status:</strong> {{ receipt.result }}</p>
+            </div>
+
+            <!-- Right Column: Image -->
+            <div>
+                <p><strong>Uploaded Image:</strong></p>
+                {% if receipt.id %}
+                    <img src="{{ url_for('main_web.receipt_image', receipt_id=receipt.id) }}" alt="Uploaded Receipt Image" class="rounded-lg shadow-md" onerror="console.log('Image load failed')">
+                {% else %}
+                    <p>No image available for this receipt.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Raw Text Section -->
+        <div class="mt-6">
+            <h3 class="text-lg font-semibold">Raw OCR Text</h3>
+            <pre class="bg-gray-100 p-4 rounded">{{ receipt.raw_text }}</pre>
+        </div>
+
+        <!-- Parsed Data Section -->
+        <div class="mt-6">
+            <h3 class="text-lg font-semibold">Parsed Data</h3>
+            <pre class="bg-gray-100 p-4 rounded">{{ receipt.parsed_data | tojson(indent=2) }}</pre>
+        </div>
+    </div>
+
+    <!-- Actions Section -->
+    <div class="flex justify-end space-x-4">
+        <a href="{{ url_for('main_web.receipts') }}"
+            class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700">
+            Back to Receipts List
+        </a>
+        <form action="{{ url_for('main_web.delete_receipt', receipt_id=receipt.id) }}" method="POST"
+            onsubmit="return confirm('Are you sure you want to delete this receipt?');">
+            <button type="submit" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700">
+                Delete Receipt
+            </button>
+        </form>
+    </div>
+</section>
+{% endblock %}

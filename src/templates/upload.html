@@ -2,57 +2,180 @@
 
 {% block content %}
 
-<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/styles.css') }}">
+<section class="container mx-auto px-4 py-8">
+    <!-- Page Title -->
+    <h1 class="text-3xl font-bold text-gray-900 mb-8">Upload a Document</h1>
 
-<h1>Upload a Document</h1>
-<form action="{{ url_for('main_web.upload_file') }}" method="post" enctype="multipart/form-data">
-    <label for="file">Select a file:</label>
-    <input type="file" name="file" id="file">
+    <!-- Upload Form Section -->
+    <div class="bg-white shadow-md rounded-lg p-6 mb-8">
+        <form id="uploadForm" enctype="multipart/form-data" class="space-y-6">
+            <!-- File Upload -->
+            <div>
+                <label for="file" class="block text-sm font-medium text-gray-700">Select a file</label>
+                <input type="file" name="file" id="file" class="mt-2 p-2 border rounded-md w-full" required>
+            </div>
 
-    <label for="ocr_engine">Select OCR Engine:</label>
-    <select id="ocr_engine" name="ocr_engine">
-        <option value="googlevision">Google Vision</option>
-        <option value="tesseract">Tesseract</option>
-    </select>
+            <!-- OCR Engine Selection -->
+            <div>
+                <label for="ocr_engine" class="block text-sm font-medium text-gray-700">Select OCR Engine</label>
+                <select id="ocr_engine" name="ocr_engine" class="mt-2 p-2 border rounded-md w-full">
+                    <option value="googlevision">Google Vision</option>
+                    <option value="tesseract">Tesseract</option>
+                </select>
+            </div>
 
-    <input type="submit" value="Upload">
-</form>
-
-
-<h2>Or use your phone camera</h2>
-<div id="result"></div>
-<video id="video" autoplay style="display:none;"></video>
-<canvas id="canvas"></canvas>
-
-<label for="ocrEngine">Select OCR Engine:</label>
-<select id="ocrEngine">
-    <option value="googlevision">Google Vision</option>
-    <option value="tesseract">Tesseract</option>
-</select>
-
-<button onclick="snapPhoto()">Snap Photo</button>
-
-<!-- Display captured images -->
-<div class="capturedImages">
-    <div class="capturedImage">
-        <h3>Processed Image (with OpenCV)</h3>
-        <img id="processedImage" alt="Processed Image" />
-        <button onclick="uploadPhoto(processedBlob)">Upload Processed Image</button>
-        <button onclick="savePhoto(processedImageDataUrl, 'processed_image.png')">Save Processed Image</button>
+            <!-- Submit Button -->
+            <div>
+                <button type="button" onclick="uploadDocument()"
+                    class="w-full bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700">
+                    Upload Document
+                </button>
+            </div>
+        </form>
     </div>
-    <div class="capturedImage">
-        <h3>Cropped Image (inside contour)</h3>
-        <img id="croppedImage" alt="Cropped Image" />
-        <button onclick="uploadPhoto(croppedBlob)">Upload Cropped Image</button>
-        <button onclick="savePhoto(croppedImageDataUrl, 'cropped_image.png')">Save Cropped Image</button>
+
+    <!-- Real-time Camera Section -->
+    <div class="bg-white shadow-md rounded-lg p-6">
+        <h2 class="text-2xl font-bold text-gray-900 mb-6">Or use your phone camera</h2>
+
+        <div class="flex flex-col items-center space-y-4">
+            <video id="video" autoplay class="w-full max-w-sm bg-gray-200 rounded-lg shadow-md"></video>
+            <canvas id="canvas" class="w-full max-w-sm bg-gray-200 rounded-lg shadow-md"></canvas>
+
+            <!-- OCR Engine Selection for Camera -->
+            <label for="ocrEngine" class="block text-sm font-medium text-gray-700">Select OCR Engine</label>
+            <select id="ocrEngine" class="mt-2 p-2 border rounded-md w-full max-w-sm">
+                <option value="googlevision">Google Vision</option>
+                <option value="tesseract">Tesseract</option>
+            </select>
+
+            <!-- Snap Photo Button -->
+            <button onclick="snapPhoto()"
+                class="w-full max-w-sm bg-green-600 text-white p-3 rounded-lg hover:bg-green-700">
+                Snap Photo
+            </button>
+        </div>
+
+        <!-- Captured Images Section -->
+        <div class="capturedImages mt-6">
+            <!-- Processed Image -->
+            <div class="capturedImage mb-6">
+                <h3 class="text-xl font-semibold">Processed Image (with OpenCV)</h3>
+                <img id="processedImage" alt="Processed Image" class="mt-4 max-w-full rounded-lg shadow-lg" />
+                <div class="mt-4 space-x-4">
+                    <button onclick="uploadPhoto(processedBlob)"
+                        class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">Upload Processed
+                        Image</button>
+                    <button onclick="savePhoto(processedImageDataUrl, 'processed_image.png')"
+                        class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700">Save Processed
+                        Image</button>
+                </div>
+            </div>
+
+            <!-- Cropped Image -->
+            <div class="capturedImage mb-6">
+                <h3 class="text-xl font-semibold">Cropped Image (inside contour)</h3>
+                <img id="croppedImage" alt="Cropped Image" class="mt-4 max-w-full rounded-lg shadow-lg" />
+                <div class="mt-4 space-x-4">
+                    <button onclick="uploadPhoto(croppedBlob)"
+                        class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">Upload Cropped
+                        Image</button>
+                    <button onclick="savePhoto(croppedImageDataUrl, 'cropped_image.png')"
+                        class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700">Save Cropped
+                        Image</button>
+                </div>
+            </div>
+
+            <!-- Raw Image -->
+            <div class="capturedImage mb-6">
+                <h3 class="text-xl font-semibold">Raw Image (no processing)</h3>
+                <img id="rawImage" alt="Raw Image" class="mt-4 max-w-full rounded-lg shadow-lg" />
+                <div class="mt-4 space-x-4">
+                    <button onclick="uploadPhoto(rawBlob)"
+                        class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">Upload Raw Image</button>
+                    <button onclick="savePhoto(rawImageDataUrl, 'raw_image.png')"
+                        class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700">Save Raw Image</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Result Area -->
+        <div id="result" class="mt-8">
+            <!-- Status Header -->
+            <div class="text-center mb-4">
+                <h3 id="status" class="text-xl font-bold text-gray-900"></h3>
+            </div>
+
+            <!-- Result Columns -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Column 1: Image -->
+                <div id="uploadedImageColumn" class="p-4 bg-gray-100 rounded-lg shadow-lg">
+                    <h4 class="text-lg font-semibold mb-4">Uploaded Image</h4>
+                    <img id="uploadedImage" alt="Uploaded Image" class="w-full rounded-lg shadow-md" />
+                </div>
+
+                <!-- Column 2: Raw OCR Text -->
+                <div id="rawTextColumn" class="p-4 bg-gray-100 rounded-lg shadow-lg">
+                    <h4 class="text-lg font-semibold mb-4">Raw OCR Text</h4>
+                    <pre id="rawText" class="bg-gray-200 p-2 rounded-md"></pre>
+                </div>
+
+                <!-- Column 3: Parsed Data -->
+                <div id="parsedDataColumn" class="p-4 bg-gray-100 rounded-lg shadow-lg">
+                    <h4 class="text-lg font-semibold mb-4">Parsed Data</h4>
+                    <pre id="parsedData" class="bg-gray-200 p-2 rounded-md"></pre>
+                </div>
+            </div>
+        </div>
     </div>
-    <div class="capturedImage">
-        <h3>Raw Image (no processing)</h3>
-        <img id="rawImage" alt="Raw Image" />
-        <button onclick="uploadPhoto(rawBlob)">Upload Raw Image</button>
-        <button onclick="savePhoto(rawImageDataUrl, 'raw_image.png')">Save Raw Image</button>
-    </div>
-</div>
+</section>
+
+<script>
+    // Handle the file upload via AJAX
+    function uploadDocument(blob = null) {
+        // let formData = new FormData(document.getElementById('uploadForm'));
+        let formData = new FormData();
+
+        // If a blob is provided (e.g., a captured image), use it for the file upload
+        if (blob) {
+            formData.append('file', blob, 'capture.png');
+        } else {
+            // Otherwise, use the file from the file input
+            formData = new FormData(document.getElementById('uploadForm'));
+        }
+
+        fetch('/extract', {
+            method: 'POST',
+            body: formData
+        })
+            .then(response => response.json())
+            .then(data => {
+                // Display status
+                document.getElementById('status').innerText = `Status: ${data.status}`;
+
+                // Display the uploaded image
+                let fileInput = document.getElementById('file');
+                if (fileInput.files.length > 0) {
+                    let reader = new FileReader();
+                    reader.onload = function (e) {
+                        document.getElementById('uploadedImage').src = e.target.result;
+                    };
+                    reader.readAsDataURL(fileInput.files[0]);
+                }
+
+                // Display raw text
+                document.getElementById('rawText').innerText = data.raw_text;
+
+                // Display parsed data
+                if (data.parsed_data) {
+                    document.getElementById('parsedData').innerText = JSON.stringify(data.parsed_data, null, 2);
+                } else {
+                    document.getElementById('parsedData').innerText = 'No parsed data available.';
+                }
+            })
+            .catch(error => console.error('Error:', error));
+    }
+</script>
 
 <script src="{{ url_for('static', filename='js/upload.js') }}"></script>
 

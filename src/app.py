@@ -7,6 +7,7 @@ from flask_cors import CORS
 from .config import app_config
 from .models import db, bcrypt
 from .views.UserView import user_api as user_blueprint
+from .views.ReceiptView import receipt_api as receipt_blueprint
 from .views.ActivityView import activity_api as activity_blueprint
 from .views.IncidentsView import incident_api as incident_blueprint
 from .views.MainView import main_web as main_blueprint
@@ -46,6 +47,7 @@ def create_app(env_name):
 
     app.register_blueprint(user_blueprint, url_prefix='/api/auth')
     app.register_blueprint(activity_blueprint, url_prefix='/api/activity')
+    app.register_blueprint(receipt_blueprint, url_prefix='/api/receipts')
     app.register_blueprint(incident_blueprint, url_prefix='/api/incident')
     app.register_blueprint(login_blueprint)
     app.register_blueprint(main_blueprint)
