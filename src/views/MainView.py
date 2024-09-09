@@ -156,27 +156,6 @@ def extract_api():
         raw_text = result.get('raw_text')
         parsed_data = result.get('parsed_data')
 
-        # print('current_user',current_user)
-        # print('current_user',current_user.id)
-        # print('id',g.user.get('id'))
-        # user = UserModel.get_one_user(g.user.get('id'))
-        # user_id = user.id
-
-
-        # Save the upload and processing info to the database
-        # image_blob = file.read()  # Convert file to blob for storage
-        # new_receipt_data = {
-        #     'user_id': current_user.id,
-        #     'filename': filename,
-        #     'imageinbytes': image_blob,
-        #     'result': status,
-        #     'raw_text': raw_text,
-        #     'parsed_data': parsed_data
-        # }
-        # new_receipt = ReceiptModel(new_receipt_data)
-        # new_receipt.save()
-    
-
         # Ensure no datetime objects in parsed_data (convert to string if necessary)
         def convert_datetime(obj):
             if isinstance(obj, datetime):
@@ -189,9 +168,14 @@ def extract_api():
         # image_blob = file.read()  # Read file as binary data
         # print("Image size:", len(image_blob))  # Print the size of the uploaded image
 
+        user_id = None
+        if current_user.is_authenticated:
+            user_id = current_user.id
+
+
         # Prepare the data dictionary for ReceiptModel
         new_receipt_data = {
-            'user_id': current_user.id,  # Assuming Flask-Login is used for authentication
+            'user_id': user_id,  # Assuming Flask-Login is used for authentication
             'filename': filename,
             'imageinbytes': image_blob,  # Convert file to blob for storage
             'result': status,
