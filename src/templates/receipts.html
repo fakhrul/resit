@@ -62,10 +62,13 @@
 </section>
 
 <script>
+const protocol = window.location.protocol;
+const apiBaseURL = `${protocol}//resit.safa.com.my/api`;
+
 // Fetch and display the receipts
 function fetchReceipts(filters = {}) {
     let params = new URLSearchParams(filters);
-    fetch('/api/receipts?' + params.toString())
+    fetch(`${apiBaseURL}/receipts?${params.toString()}`)
         .then(response => response.json())
         .then(data => {
             let tableBody = document.getElementById('receiptsTableBody');
