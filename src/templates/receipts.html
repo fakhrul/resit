@@ -65,7 +65,7 @@
 // Fetch and display the receipts
 function fetchReceipts(filters = {}) {
     let params = new URLSearchParams(filters);
-    fetch('https://resit.safa.com.my/api/api/receipts?' + params.toString())
+    fetch('https://resit.safa.com.my/api/receipts?' + params.toString())
         .then(response => response.json())
         .then(data => {
             let tableBody = document.getElementById('receiptsTableBody');
