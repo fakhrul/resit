@@ -51,10 +51,19 @@ def create_app(env_name):
     def internal_error(error):
         return render_template('500.html'), 500
 
+    # Define the Content Security Policy (CSP)
+    csp = {
+        'default-src': "'self'",  # Default to 'self' (same-origin)
+        'style-src': ["'self'", 'https://cdn.jsdelivr.net', "'unsafe-inline'"],  # Allow external styles
+        'script-src': ["'self'", 'https://ajax.googleapis.com', 'https://docs.opencv.org', "'unsafe-eval'", "'unsafe-inline'"],  # Allow external scripts
+        'connect-src': ["'self'", 'data:'],  # Allow data: URIs for connections
+    }
+
+
     # Conditionally enable Flask-Talisman
     # Enable Talisman (force HTTPS) only if USE_TALISMAN is true (for production environments)
     if os.getenv('USE_TALISMAN', 'false').lower() == 'true':
-        Talisman(app)
+        Talisman(app, content_security_policy=csp)
         print("Talisman enabled: HTTPS will be enforced.")
     else:
         print("Talisman disabled: HTTPS will not be enforced.")

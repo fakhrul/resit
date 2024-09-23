@@ -214,8 +214,8 @@ def view_receipt(receipt_id):
     if not receipt:
         return redirect(url_for('main_web.dashboard'))  # Redirect to dashboard if receipt is not found
 
-    print(receipt)
-    print(receipt.imageinbytes)
+    # print(receipt)
+    # print(receipt.imageinbytes)
     # Render the receipt details page with the receipt data
     return render_template('receipt_details.html', receipt=receipt)
 
