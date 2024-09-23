@@ -56,7 +56,7 @@ def create_app(env_name):
         'default-src': "'self'",  # Default to 'self' (same-origin)
         'style-src': ["'self'", 'https://cdn.jsdelivr.net', "'unsafe-inline'"],  # Allow external styles
         'script-src': ["'self'", 'https://ajax.googleapis.com', 'https://docs.opencv.org', "'unsafe-eval'", "'unsafe-inline'"],  # Allow external scripts
-        'connect-src': ["'self'", 'data:'],  # Allow data: URIs for connections
+        'connect-src': ["'self'",'https://resit.safa.com.my', 'data:'],  # Allow data: URIs for connections
     }
 
 
