@@ -12,7 +12,8 @@ app = create_app(env_name)
 
 def open_browser():
       port = os.getenv('FLASK_PORT')
-      webbrowser.open_new("http://127.0.0.1:" + port)
+      if app.config['ENV'] == 'development':
+           webbrowser.open_new("http://127.0.0.1:" + port)
 
 if __name__ == '__main__':
   port = os.getenv('FLASK_PORT')
