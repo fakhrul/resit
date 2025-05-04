@@ -47,9 +47,23 @@ class DocumentProcessor:
     def process_pdf(self, pdf_path, ocr_engine):
         """Convert PDF to images and process each page."""
         try:
+            # Convert PDF to a list of image objects
             images = convert_from_path(pdf_path)
-            results = [self.process_image(image, ocr_engine) for image in images]
+            results = []
+            
+            for image in images:
+                # Save the image to a temporary file
+                with tempfile.NamedTemporaryFile(delete=False, suffix='.png') as temp_img_file:
+                    image.save(temp_img_file.name, format='PNG')
+                    temp_img_file.close()
+                    # Process the image file path
+                    result = self.process_image(temp_img_file.name, ocr_engine)
+                    results.append(result)
+                    # Delete the temporary file after processing
+                    os.remove(temp_img_file.name)
+            
             return results
+        
         except Exception as e:
             return {"status": "Error", "raw_text": str(e), "parsed_data": None}
 
@@ -119,14 +133,23 @@ class DocumentProcessor:
         with open(temp_file.name, 'w') as file:
             file.write(extracted_text)
         return temp_file.name
+    
 
 if __name__ == "__main__":
     # Path to the image you want to process
     # image_path = "test2.jpg"
-    image_path = "bill_sample.png"
-    
+    # image_path = "bill_sample.png"
+
+    parent_parent_dir = os.path.abspath(os.path.join(os.getcwd(), os.pardir, os.pardir))
+    image_filename = "bank_statement.pdf"
+    image_path = os.path.join(parent_parent_dir,'files','samples', image_filename)
+
+    bank_statements_path = os.path.join(parent_parent_dir,'files','templates_data','bank_statements')
+    print(bank_statements_path)
     # Path to your templates directory
-    template_dirs = ['templates_data/invoices/', 'templates_data/receipts/', 'templates_data/credit_notes/']
+    template_dirs = [
+        bank_statements_path,
+        'templates_data/invoices/', 'templates_data/receipts/', 'templates_data/credit_notes/', 'templates_data/bank_statements/']
 
     # Create an object of DocumentProcessor with OCR engine selection
     # Choose 'tesseract' or 'googlevision'

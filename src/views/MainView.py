@@ -3,6 +3,7 @@ from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
 import os
 from ..shared.DocumentProcessor import DocumentProcessor
+from ..shared.BankStatementProcessor import BankStatementProcessor
 from src.config import app_config
 from src.models.ReceiptModel import ReceiptModel, ReceiptSchema
 from datetime import datetime
@@ -28,6 +29,7 @@ template_dirs = [
     'files/templates_data/credit_notes/'
 ]
 processor = DocumentProcessor(template_dirs=template_dirs)
+processor_bank = BankStatementProcessor()
 
 # Initialize receipt schema
 receipt_schema = ReceiptSchema()
@@ -57,6 +59,11 @@ def upload_file():
             return redirect(request.url)
 
         file = request.files['file']
+
+        document_type = request.form.get('document_type')
+        if document_type != 'bank_statement':
+            document_type = 'receipt'
+        
         ocr_engine = request.form.get('ocr_engine')
         if not ocr_engine or ocr_engine not in ['tesseract', 'googlevision']:
             flash("Unsupported OCR engine. Choose 'tesseract' or 'googlevision'.")
@@ -71,30 +78,37 @@ def upload_file():
             file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             file.save(file_path)
 
-            # Process the file and get status, raw text, and parsed data
-            result = processor.process_file(file_path, ocr_engine=ocr_engine)
 
-            # Extract relevant info
-            status = result.get('status')
-            raw_text = result.get('raw_text')
-            parsed_data = result.get('parsed_data')
+            if document_type == 'bank_statement':
+                result = processor_bank.process_file(file_path)
+                status = result.get('status')
+                raw_text = result.get('raw_text')
+                parsed_data = result.get('parsed_data')
+            else:
+                # Process the file and get status, raw text, and parsed data
+                result = processor.process_file(file_path, ocr_engine=ocr_engine)
 
-            user = UserModel.get_one_user(g.user.get('id'))
-            user_id = user.id
+                # Extract relevant info
+                status = result.get('status')
+                raw_text = result.get('raw_text')
+                parsed_data = result.get('parsed_data')
+
+                user = UserModel.get_one_user(g.user.get('id'))
+                user_id = user.id
 
 
-            # Save the upload and processing info to the database
-            image_blob = file.read()  # Convert file to blob for storage
-            new_receipt_data = {
-                'user_id': user_id,
-                'filename': filename,
-                'imageinbytes': image_blob,
-                'result': status,
-                'raw_text': raw_text,
-                'parsed_data': parsed_data
-            }
-            new_receipt = ReceiptModel(new_receipt_data)
-            new_receipt.save()
+                # Save the upload and processing info to the database
+                image_blob = file.read()  # Convert file to blob for storage
+                new_receipt_data = {
+                    'user_id': user_id,
+                    'filename': filename,
+                    'imageinbytes': image_blob,
+                    'result': status,
+                    'raw_text': raw_text,
+                    'parsed_data': parsed_data
+                }
+                new_receipt = ReceiptModel(new_receipt_data)
+                new_receipt.save()
 
             return render_template('results.html', status=status, raw_text=raw_text, parsed_data=parsed_data, filename=filename)
 
@@ -107,6 +121,11 @@ def extract_api():
         return jsonify({'error': 'No file part'}), 400
 
     file = request.files['file']
+    
+    document_type = request.form.get('document_type')
+    if document_type != 'bank_statement':
+        document_type = 'receipt'
+
     ocr_engine = request.form.get('ocr_engine', 'googlevision')  # Default to googlevision if not provided
     if ocr_engine not in ['tesseract', 'googlevision']:
         return jsonify({'error': "Unsupported OCR engine. Choose 'tesseract' or 'googlevision'"}), 400
@@ -117,13 +136,6 @@ def extract_api():
     if file and allowed_file(file.filename):
         filename = secure_filename(file.filename)
 
-        # # Read the file as binary data before saving
-        # image_blob = file.read()  # Read image as binary data
-        # print("Image size:", len(image_blob))  # Check the image size
-
-        # file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-        # file.save(file_path)
-
         # Read the file as binary data before saving
         image_blob = file.read()  # Read image as binary data
         print("Image size:", len(image_blob))  # Check the image size
@@ -132,60 +144,47 @@ def extract_api():
         with open(file_path, 'wb') as f:
             f.write(image_blob)  # Save the file manually
 
-        # Process the file and get status, raw text, and parsed data
-        result = processor.process_file(file_path, ocr_engine=ocr_engine)
 
-        # # Extract relevant info
-        # status = result.get('status')
-        # raw_text = result.get('raw_text')
-        # parsed_data = result.get('parsed_data')
+        if document_type == 'bank_statement':
+            result = processor_bank.process_file(file_path)
+            print("Bank statement processing result:", result)  # Debug statement
+            status = result.get('status')
+            raw_text = result.get('raw_text')
+            parsed_data = result.get('parsed_data')
+        else:
+            result = processor.process_file(file_path, ocr_engine=ocr_engine)
 
-        # # Save the upload and processing info to the database
-        # image_blob = file.read()  # Convert file to blob for storage
-        # new_receipt = ReceiptModel(
-        #     user_id=current_user.id,  # Assuming you're using Flask-Login
-        #     filename=filename,
-        #     imageinbytes=image_blob,
-        #     result=status,
-        #     raw_text=raw_text,
-        #     parsed_data=parsed_data
-        # )
-        # new_receipt.save()
-        # Extract relevant info
-        status = result.get('status')
-        raw_text = result.get('raw_text')
-        parsed_data = result.get('parsed_data')
+            status = result.get('status')
+            raw_text = result.get('raw_text')
+            parsed_data = result.get('parsed_data')
 
-        # Ensure no datetime objects in parsed_data (convert to string if necessary)
-        def convert_datetime(obj):
-            if isinstance(obj, datetime):
-                return obj.isoformat()
-            return obj
+            # Ensure no datetime objects in parsed_data (convert to string if necessary)
+            def convert_datetime(obj):
+                if isinstance(obj, datetime):
+                    return obj.isoformat()
+                return obj
 
-        if parsed_data:
-            parsed_data = {k: convert_datetime(v) for k, v in parsed_data.items()}
+            if parsed_data:
+                parsed_data = {k: convert_datetime(v) for k, v in parsed_data.items()}
 
-        # image_blob = file.read()  # Read file as binary data
-        # print("Image size:", len(image_blob))  # Print the size of the uploaded image
-
-        user_id = None
-        if current_user.is_authenticated:
-            user_id = current_user.id
+            user_id = None
+            if current_user.is_authenticated:
+                user_id = current_user.id
 
 
-        # Prepare the data dictionary for ReceiptModel
-        new_receipt_data = {
-            'user_id': user_id,  # Assuming Flask-Login is used for authentication
-            'filename': filename,
-            'imageinbytes': image_blob,  # Convert file to blob for storage
-            'result': status,
-            'raw_text': raw_text,
-            'parsed_data': parsed_data
-        }
+            # Prepare the data dictionary for ReceiptModel
+            new_receipt_data = {
+                'user_id': user_id,  # Assuming Flask-Login is used for authentication
+                'filename': filename,
+                'imageinbytes': image_blob,  # Convert file to blob for storage
+                'result': status,
+                'raw_text': raw_text,
+                'parsed_data': parsed_data
+            }
 
-        # Create a new receipt entry
-        new_receipt = ReceiptModel(new_receipt_data)
-        new_receipt.save()
+            # Create a new receipt entry
+            new_receipt = ReceiptModel(new_receipt_data)
+            new_receipt.save()
 
         # Return the extracted data as JSON
         return jsonify({

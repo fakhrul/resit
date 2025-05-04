@@ -1,0 +1,25 @@
+issuer: "Maybank Islamic Berhad"
+template_name: "maybank_bank_statement"
+fields:
+  account_number: 'NOMBOR AKAUN\s*\:\s*(\d+)'
+  statement_date: 'TARIKH PENYATA\s*\:\s*(\d{2}/\d{2}/\d{2})'
+  beginning_balance: 'BEGINNING\s*BALANCE\s*([-\d,]+\.\d{2})'
+  ending_balance: 'ENDING\s*BALANCE\s*\:\s*([-\d,]+\.\d{2})'
+  total_debit: 'TOTAL\s*DEBIT\s*\:\s*([-\d,]+\.\d{2})'
+  total_credit: 'TOTAL\s*CREDIT\s*\:\s*([-\d,]+\.\d{2})'
+
+keywords:
+  - "Maybank Islamic Berhad"
+required_fields:
+  - account_number
+  - statement_date
+options:
+  currency: MYR
+  date_formats:
+    - '%d/%m/%y'  # For dates like 01/12/22
+    - '%d/%m/%Y'  # For full-year formats like 01/12/2022
+  remove_whitespace: True
+  languages:
+    - en
+  decimal_separator: '.'
+  thousands_separator: ','
